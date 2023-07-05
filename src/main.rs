@@ -11,11 +11,11 @@ fn main() -> Result<(), eframe::Error> {
     println!("{:?}", args);
 
     let options = eframe::NativeOptions {
-        initial_window_size: Some(egui::vec2(320.0, 240.0)),
+        initial_window_size: Some(egui::vec2(410.0, 80.0)),
         ..Default::default()
     };
     eframe::run_native(
-        "My egui App",
+        "Labelmaker",
         options,
         Box::new(|_cc| Box::<Labelmaker>::default()),
     )
@@ -43,15 +43,13 @@ fn parse_path(s: &std::ffi::OsStr) -> Result<std::path::PathBuf, &'static str> {
 }
 
 struct Labelmaker {
-    name: String,
-    age: u32,
+    name_entry: String,
 }
 
 impl Default for Labelmaker {
     fn default() -> Self {
         Self {
-            name: "".to_owned(),
-            age: 0,
+            name_entry: "".to_owned(),
         }
     }
 }
@@ -59,17 +57,14 @@ impl Default for Labelmaker {
 impl eframe::App for Labelmaker {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("My egui Application");
             ui.horizontal(|ui| {
-                let name_label = ui.label("Your name: ");
-                ui.text_edit_singleline(&mut self.name)
+                let name_label = ui.label("File Name:");
+                ui.text_edit_singleline(&mut self.name_entry)
                     .labelled_by(name_label.id);
+                if ui.button("Save").clicked() {
+                    println!("{}", self.name_entry)
+                }
             });
-            ui.add(egui::Slider::new(&mut self.age, 0..=120).text("age"));
-            if ui.button("Click each year").clicked() {
-                self.age += 1;
-            }
-            ui.label(format!("Hello '{}', age {}", self.name, self.age));
         });
     }
 }
