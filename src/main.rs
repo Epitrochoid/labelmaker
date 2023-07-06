@@ -24,7 +24,8 @@ fn main() -> Result<(), eframe::Error> {
 
 #[derive(Debug)]
 struct LabelmakerArgs {
-    command: std::path::PathBuf
+    command: String,
+    path_template: String,
 }
 
 
@@ -32,15 +33,15 @@ fn parse_args() -> Result<LabelmakerArgs, pico_args::Error> {
     let mut raw_args = pico_args::Arguments::from_env();
 
     let args = LabelmakerArgs {
-        command: raw_args.value_from_os_str("--command", parse_path)?
+        command: raw_args.value_from_str("--command")?
     };
 
     Ok(args)
 }
 
-fn parse_path(s: &std::ffi::OsStr) -> Result<std::path::PathBuf, &'static str> {
-    Ok(s.into())
-}
+// fn parse_path(s: &std::ffi::OsStr) -> Result<std::path::PathBuf, &'static str> {
+//     Ok(s.into())
+// }
 
 struct Labelmaker {
     name_entry: String,
