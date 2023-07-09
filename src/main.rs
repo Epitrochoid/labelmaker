@@ -1,4 +1,5 @@
 use eframe::egui;
+use egui::Key;
 
 fn main() -> Result<(), eframe::Error> {
     let args = match parse_args() {
@@ -10,6 +11,12 @@ fn main() -> Result<(), eframe::Error> {
     };
     println!("{:?}", args);
 
+    let initial_state = Labelmaker {
+        name_entry: "".to_owned(),
+        save_clicked: false,
+        args: args,
+    };
+
     let options = eframe::NativeOptions {
         initial_window_size: Some(egui::vec2(410.0, 80.0)),
         ..Default::default()
@@ -17,7 +24,7 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Labelmaker",
         options,
-        Box::new(|_cc| Box::<Labelmaker>::default()),
+        Box::new(|_cc| Box::new(initial_state)),
     )
 }
 
@@ -25,7 +32,8 @@ fn main() -> Result<(), eframe::Error> {
 #[derive(Debug)]
 struct LabelmakerArgs {
     command: String,
-    path_template: String,
+    path: std::path::PathBuf,
+    name_template: String,
 }
 
 
@@ -33,39 +41,50 @@ fn parse_args() -> Result<LabelmakerArgs, pico_args::Error> {
     let mut raw_args = pico_args::Arguments::from_env();
 
     let args = LabelmakerArgs {
-        command: raw_args.value_from_str("--command")?
+        command: raw_args.value_from_str("--command")?,
+        path: raw_args.value_from_os_str("--path", parse_path)?,
+        name_template: raw_args.value_from_str("--name")?,
     };
 
     Ok(args)
 }
 
-// fn parse_path(s: &std::ffi::OsStr) -> Result<std::path::PathBuf, &'static str> {
-//     Ok(s.into())
-// }
+fn parse_path(s: &std::ffi::OsStr) -> Result<std::path::PathBuf, &'static str> {
+    Ok(s.into())
+}
 
 struct Labelmaker {
     name_entry: String,
-}
-
-impl Default for Labelmaker {
-    fn default() -> Self {
-        Self {
-            name_entry: "".to_owned(),
-        }
-    }
+    save_clicked: bool,
+    args: LabelmakerArgs,
 }
 
 impl eframe::App for Labelmaker {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        if self.save_clicked {
+            let filename = fill_name(self.args.name_template.clone(), &self.name_entry);
+            println!("{}", filename);
+            frame.close();
+        }
+
+        if ctx.input(|i| i.key_pressed(Key::Enter)) {
+            self.save_clicked = true
+        }
+
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal(|ui| {
                 let name_label = ui.label("File Name:");
                 ui.text_edit_singleline(&mut self.name_entry)
-                    .labelled_by(name_label.id);
+                    .labelled_by(name_label.id)
+                    .request_focus();
                 if ui.button("Save").clicked() {
-                    println!("{}", self.name_entry)
+                    self.save_clicked = true
                 }
             });
         });
     }
+}
+
+fn fill_name(template_string: String, name: &str) -> String {
+    template_string.replace("<name>", name)
 }
