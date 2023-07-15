@@ -1,3 +1,6 @@
+use std::path::PathBuf;
+use std::process::Command;
+
 use eframe::egui;
 use egui::Key;
 
@@ -28,14 +31,12 @@ fn main() -> Result<(), eframe::Error> {
     )
 }
 
-
 #[derive(Debug)]
 struct LabelmakerArgs {
     command: String,
-    path: std::path::PathBuf,
+    path: PathBuf,
     name_template: String,
 }
-
 
 fn parse_args() -> Result<LabelmakerArgs, pico_args::Error> {
     let mut raw_args = pico_args::Arguments::from_env();
@@ -49,7 +50,7 @@ fn parse_args() -> Result<LabelmakerArgs, pico_args::Error> {
     Ok(args)
 }
 
-fn parse_path(s: &std::ffi::OsStr) -> Result<std::path::PathBuf, &'static str> {
+fn parse_path(s: &std::ffi::OsStr) -> Result<PathBuf, &'static str> {
     Ok(s.into())
 }
 
@@ -64,6 +65,7 @@ impl eframe::App for Labelmaker {
         if self.save_clicked {
             let filename = fill_name(self.args.name_template.clone(), &self.name_entry);
             println!("{}", filename);
+            call_command(&self.args.command, &mut self.args.path, &filename);
             frame.close();
         }
 
@@ -87,4 +89,19 @@ impl eframe::App for Labelmaker {
 
 fn fill_name(template_string: String, name: &str) -> String {
     template_string.replace("<name>", name)
+}
+
+fn call_command(command: &str, path: &mut PathBuf, filename: &str) {
+    path.push(filename);
+    let full_path = path.to_str().expect("Failed to convert path to string");
+    let mut full_command = command.to_owned();
+    full_command.push_str(" ");
+    full_command.push_str(full_path);
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg(full_command)
+        .output()
+        .expect("Failed to execute");
+    
+    println!("{}", String::from_utf8_lossy(&output.stdout));
 }
