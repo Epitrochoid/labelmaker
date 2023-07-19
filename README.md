@@ -26,3 +26,14 @@ name entry modal and `<timestamp>` will be replaced with the current date in YYY
 labelmaker --command import --path ~/screenshots --name "<timestamp>-<name>.png"
 ```
 
+## License
+
+This project is licensed under either of
+
+- [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) ([`LICENSE-APACHE`](LICENSE-APACHE))
+- [MIT license](https://opensource.org/licenses/MIT) ([`LICENSE-MIT`](LICENSE-MIT))
+
+at your option.
+
+The [SPDX](https://spdx.dev) license identifier for this project is `MIT OR Apache-2.0`.
+
