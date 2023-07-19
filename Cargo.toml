@@ -12,7 +12,3 @@ eframe = "0.22.0"
 pico-args = "0.5"
 rand = "0.8.5"
 tempfile = "3.6.0"
-
-[features]
-default = ["eq-separator"]
-eq-separator = ["pico-args/eq-separator"]
